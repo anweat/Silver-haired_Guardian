@@ -1,0 +1,241 @@
+# ===================================
+# 银龄守候项目 - Git忽略规则
+# ===================================
+
+# ===================================
+# Android (老年端APP)
+# ===================================
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.ap_
+*.aab
+
+# Android Studio
+android-elderly-app/.idea/
+android-elderly-app/*.iml
+android-elderly-app/app/build/
+android-elderly-app/build/
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# Keystore files
+*.jks
+*.keystore
+
+# ===================================
+# Flutter (子女端APP)
+# ===================================
+flutter-family-app/.dart_tool/
+flutter-family-app/.flutter-plugins
+flutter-family-app/.flutter-plugins-dependencies
+flutter-family-app/.packages
+flutter-family-app/pubspec.lock
+flutter-family-app/build/
+flutter-family-app/.flutter-plugins
+flutter-family-app/.flutter-plugins-dependencies
+
+# Flutter/Dart/Pub
+**/.dart_tool/
+**/.packages
+**/pubspec.lock
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# iOS
+flutter-family-app/ios/Pods/
+flutter-family-app/ios/.symlinks/
+flutter-family-app/ios/Flutter/Flutter.framework
+flutter-family-app/ios/Flutter/Flutter.podspec
+flutter-family-app/ios/.generated/
+
+# Android
+flutter-family-app/android/.gradle
+flutter-family-app/android/captures/
+flutter-family-app/android/gradlew
+flutter-family-app/android/gradlew.bat
+flutter-family-app/android/local.properties
+flutter-family-app/android/**/GeneratedPluginRegistrant.java
+
+# ===================================
+# Java/Spring Boot (后端服务)
+# ===================================
+backend/**/*.class
+backend/**/*.log
+backend/**/*.ctxt
+backend/**/.mtj.tmp/
+backend/**/*.jar
+backend/**/*.war
+backend/**/*.nar
+backend/**/*.ear
+backend/**/*.zip
+backend/**/*.tar.gz
+backend/**/*.rar
+
+# Maven
+backend/**/target/
+backend/**/.mvn/
+backend/**/mvnw
+backend/**/mvnw.cmd
+
+# IntelliJ IDEA
+backend/**/.idea/
+backend/**/*.iws
+backend/**/*.iml
+backend/**/*.ipr
+
+# Eclipse
+backend/**/.classpath
+backend/**/.project
+backend/**/.settings/
+
+# NetBeans
+backend/**/nbproject/private/
+backend/**/nbbuild/
+backend/**/dist/
+backend/**/nbdist/
+backend/**/.nb-gradle/
+
+# Spring Boot
+backend/**/application-dev.yml
+backend/**/application-prod.yml
+backend/**/application-local.yml
+
+# ===================================
+# Docker
+# ===================================
+docker/mysql/data/
+docker/redis/data/
+docker/rabbitmq/data/
+docker/nacos/data/
+docker/logs/
+
+# ===================================
+# 环境变量和敏感信息
+# ===================================
+.env
+.env.local
+.env.*.local
+*.env
+**/application-secret.yml
+
+# API密钥
+**/api-keys.txt
+**/secrets/
+
+# ===================================
+# 操作系统
+# ===================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===================================
+# IDE
+# ===================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Android Studio
+.android/
+
+# ===================================
+# 日志和临时文件
+# ===================================
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.*.sw?
+
+# ===================================
+# 数据库
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===================================
+# 备份文件
+# ===================================
+*.bak
+*.backup
+*.old
+
+# ===================================
+# Node.js (如果使用)
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ===================================
+# 测试覆盖率报告
+# ===================================
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ===================================
+# 文档生成
+# ===================================
+site/
+_site/
+
+# ===================================
+# 保留的空目录
+# ===================================
+!.gitkeep

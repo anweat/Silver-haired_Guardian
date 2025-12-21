@@ -1,0 +1,137 @@
+name: yinling_family_app
+description: 银龄守候 - 子女端APP
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 状态管理
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # 路由
+  go_router: ^13.0.0
+
+  # 网络请求
+  dio: ^5.4.0
+  pretty_dio_logger: ^1.3.1
+
+  # 数据存储
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # JSON序列化
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+
+  # UI组件
+  cupertino_icons: ^1.0.6
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.9
+  lottie: ^3.0.0
+  shimmer: ^3.0.0
+
+  # 图表
+  fl_chart: ^0.66.0
+
+  # 时间处理
+  intl: ^0.19.0
+  timeago: ^3.6.0
+
+  # 权限管理
+  permission_handler: ^11.1.0
+
+  # WebRTC视频通话
+  flutter_webrtc: ^0.9.48
+
+  # WebSocket
+  web_socket_channel: ^2.4.0
+
+  # 图片选择
+  image_picker: ^1.0.7
+
+  # 文件选择
+  file_picker: ^6.1.1
+
+  # URL启动
+  url_launcher: ^6.2.3
+
+  # 设备信息
+  device_info_plus: ^9.1.1
+  package_info_plus: ^5.0.1
+
+  # 地图定位
+  amap_flutter_location: ^3.0.0
+  amap_flutter_map: ^3.0.0
+
+  # 推送通知
+  jpush_flutter: ^2.5.1
+
+  # 二维码扫描
+  qr_code_scanner: ^1.0.1
+  qr_flutter: ^4.1.0
+
+  # 加载提示
+  flutter_easyloading: ^3.0.5
+
+  # 下拉刷新
+  pull_to_refresh: ^2.0.0
+
+  # 滑动操作
+  flutter_slidable: ^3.0.1
+
+  # 环境配置
+  flutter_dotenv: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # 代码生成
+  build_runner: ^2.4.7
+  riverpod_generator: ^2.3.9
+  json_serializable: ^6.7.1
+  freezed: ^2.4.6
+  hive_generator: ^2.0.1
+
+  # 代码检查
+  flutter_lints: ^3.0.1
+
+  # 图标生成
+  flutter_launcher_icons: ^0.13.1
+
+# Flutter配置
+flutter:
+  uses-material-design: true
+
+  # 资源文件
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/lottie/
+    - .env
+
+  # 字体配置
+  fonts:
+    - family: PingFang
+      fonts:
+        - asset: assets/fonts/PingFang-Regular.ttf
+        - asset: assets/fonts/PingFang-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PingFang-Bold.ttf
+          weight: 700
+
+# 启动图标配置
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"

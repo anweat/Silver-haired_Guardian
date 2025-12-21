@@ -1,0 +1,86 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+
+spring:
+  application:
+    name: gateway-service
+  
+  profiles:
+    active: dev
+  
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+    gateway:
+      default-filters:
+        # 添加请求ID
+        - AddRequestHeader=X-Request-Id, ${random.uuid}
+      
+      routes:
+        # 用户服务路由
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenish-rate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: '#{@pathKeyResolver}'
+        
+        # 健康管理服务路由
+        - id: health-service
+          uri: lb://health-service
+          predicates:
+            - Path=/api/health/**
+          filters:
+            - StripPrefix=1
+        
+        # 消息通讯服务路由
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/message/**
+          filters:
+            - StripPrefix=1
+        
+        # 安全监控服务路由
+        - id: security-service
+          uri: lb://security-service
+          predicates:
+            - Path=/api/security/**
+          filters:
+            - StripPrefix=1
+        
+        # AI服务路由
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - StripPrefix=1
+
+logging:
+  level:
+    root: INFO
+    com.yinling: DEBUG
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always

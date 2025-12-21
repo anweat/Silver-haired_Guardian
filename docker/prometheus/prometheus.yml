@@ -1,0 +1,99 @@
+# ===================================
+# 银龄守候项目 - Prometheus配置
+# ===================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'yinling-cluster'
+    environment: 'production'
+
+# Alertmanager配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# 规则文件
+rule_files:
+  - 'alert_rules.yml'
+
+# 抓取配置
+scrape_configs:
+  # Prometheus自身
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 网关服务
+  - job_name: 'gateway-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8080']
+        labels:
+          service: 'gateway'
+
+  # 用户服务
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['user-service:8081']
+        labels:
+          service: 'user'
+
+  # 健康管理服务
+  - job_name: 'health-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['health-service:8082']
+        labels:
+          service: 'health'
+
+  # 消息通讯服务
+  - job_name: 'message-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['message-service:8083']
+        labels:
+          service: 'message'
+
+  # 安全监控服务
+  - job_name: 'security-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['security-service:8084']
+        labels:
+          service: 'security'
+
+  # AI服务
+  - job_name: 'ai-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ai-service:8085']
+        labels:
+          service: 'ai'
+
+  # 定时任务服务
+  - job_name: 'scheduler-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['scheduler-service:8086']
+        labels:
+          service: 'scheduler'
+
+  # MySQL监控
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+
+  # Redis监控
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # RabbitMQ监控
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']

@@ -1,0 +1,115 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'flutter-family-app/**'
+      - '.github/workflows/flutter-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'flutter-family-app/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout代码
+      uses: actions/checkout@v4
+
+    - name: 设置Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+
+    - name: 缓存Flutter依赖
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.pub-cache
+          flutter-family-app/.dart_tool
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
+    - name: 安装依赖
+      working-directory: ./flutter-family-app
+      run: flutter pub get
+
+    - name: 代码生成
+      working-directory: ./flutter-family-app
+      run: flutter pub run build_runner build --delete-conflicting-outputs
+
+    - name: 代码分析
+      working-directory: ./flutter-family-app
+      run: flutter analyze
+
+    - name: 格式检查
+      working-directory: ./flutter-family-app
+      run: dart format --set-exit-if-changed .
+
+    - name: 运行测试
+      working-directory: ./flutter-family-app
+      run: flutter test --coverage
+
+    - name: 生成测试报告
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Flutter测试报告
+        path: 'flutter-family-app/test-results.json'
+        reporter: dart-json
+
+    - name: 上传覆盖率报告
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./flutter-family-app/coverage/lcov.info
+        flags: flutter
+        name: flutter-coverage
+
+    - name: 构建Android APK
+      working-directory: ./flutter-family-app
+      run: flutter build apk --release
+
+    - name: 上传Android APK
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v3
+      with:
+        name: flutter-android-apk
+        path: flutter-family-app/build/app/outputs/flutter-apk/*.apk
+
+    - name: 构建iOS (macOS环境)
+      if: false  # iOS构建需要macOS环境
+      working-directory: ./flutter-family-app
+      run: flutter build ios --release --no-codesign
+
+  build-ios:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout代码
+      uses: actions/checkout@v4
+
+    - name: 设置Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+
+    - name: 安装依赖
+      working-directory: ./flutter-family-app
+      run: flutter pub get
+
+    - name: 构建iOS
+      working-directory: ./flutter-family-app
+      run: flutter build ios --release --no-codesign
+
+    - name: 上传iOS构建
+      uses: actions/upload-artifact@v3
+      with:
+        name: flutter-ios-build
+        path: flutter-family-app/build/ios/iphoneos/*.app

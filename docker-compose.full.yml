@@ -1,0 +1,327 @@
+version: '3.8'
+
+# ===================================
+# 银龄守候项目 - 完整Docker Compose配置
+# 包含所有微服务和基础设施
+# ===================================
+
+services:
+  # ===================================
+  # MySQL主库
+  # ===================================
+  mysql-master:
+    image: mysql:8.0
+    container_name: yinling-mysql-master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_MASTER_PASSWORD:-Yinling@2025}
+      MYSQL_DATABASE: ${DB_NAME_MAIN:-yinling_main}
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/master/data:/var/lib/mysql
+      - ./docker/mysql/master/conf:/etc/mysql/conf.d
+      - ./docker/mysql/master/logs:/var/log/mysql
+      - ./scripts/init-database.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - yinling-network
+
+  # ===================================
+  # Redis
+  # ===================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: yinling-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis/data:/data
+      - ./docker/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD:-Yinling@2025}
+    networks:
+      - yinling-network
+
+  # ===================================
+  # RabbitMQ
+  # ===================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: yinling-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-Yinling@2025}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./docker/rabbitmq/data:/var/lib/rabbitmq
+    networks:
+      - yinling-network
+
+  # ===================================
+  # Nacos
+  # ===================================
+  nacos:
+    image: nacos/nacos-server:v2.3.0
+    container_name: yinling-nacos
+    restart: always
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql-master
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: ${DB_MASTER_PASSWORD:-Yinling@2025}
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - ./docker/nacos/logs:/home/nacos/logs
+    depends_on:
+      - mysql-master
+    networks:
+      - yinling-network
+
+  # ===================================
+  # 网关服务
+  # ===================================
+  gateway:
+    build:
+      context: ./backend/gateway-service
+      dockerfile: Dockerfile
+    image: yinling/gateway-service:1.0.0
+    container_name: yinling-gateway
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-dev}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - nacos
+      - redis
+    networks:
+      - yinling-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ===================================
+  # 用户服务
+  # ===================================
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    image: yinling/user-service:1.0.0
+    container_name: yinling-user-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql-master
+      - redis
+      - rabbitmq
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # 健康管理服务
+  # ===================================
+  health-service:
+    build:
+      context: ./backend/health-service
+      dockerfile: Dockerfile
+    image: yinling/health-service:1.0.0
+    container_name: yinling-health-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql-master
+      - redis
+      - rabbitmq
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # 消息通讯服务
+  # ===================================
+  message-service:
+    build:
+      context: ./backend/message-service
+      dockerfile: Dockerfile
+    image: yinling/message-service:1.0.0
+    container_name: yinling-message-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8083:8083"
+      - "8088:8088"  # WebSocket端口
+    depends_on:
+      - mysql-master
+      - redis
+      - rabbitmq
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # 安全监控服务
+  # ===================================
+  security-service:
+    build:
+      context: ./backend/security-service
+      dockerfile: Dockerfile
+    image: yinling/security-service:1.0.0
+    container_name: yinling-security-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mysql-master
+      - redis
+      - rabbitmq
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # AI服务
+  # ===================================
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    image: yinling/ai-service:1.0.0
+    container_name: yinling-ai-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      REDIS_HOST: redis
+      XUNFEI_APP_ID: ${XUNFEI_APP_ID}
+      XUNFEI_API_KEY: ${XUNFEI_API_KEY}
+      XUNFEI_API_SECRET: ${XUNFEI_API_SECRET}
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET}
+      BAIDU_API_KEY: ${BAIDU_API_KEY}
+      BAIDU_SECRET_KEY: ${BAIDU_SECRET_KEY}
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mysql-master
+      - redis
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # 定时任务服务
+  # ===================================
+  scheduler-service:
+    build:
+      context: ./backend/scheduler-service
+      dockerfile: Dockerfile
+    image: yinling/scheduler-service:1.0.0
+    container_name: yinling-scheduler-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: ${ENVIRONMENT:-dev}
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql-master
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8086:8086"
+    depends_on:
+      - mysql-master
+      - redis
+      - rabbitmq
+      - nacos
+    networks:
+      - yinling-network
+
+  # ===================================
+  # Prometheus监控
+  # ===================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: yinling-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - yinling-network
+
+  # ===================================
+  # Grafana可视化
+  # ===================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: yinling-grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-Yinling@2025}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./docker/grafana/data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - yinling-network
+
+networks:
+  yinling-network:
+    driver: bridge
