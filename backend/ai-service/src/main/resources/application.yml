@@ -1,0 +1,37 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: ai-service
+  datasource:
+    url: jdbc:mysql://mysql-master:3306/yinling_ai?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: Yinling@2025
+  redis:
+    host: redis
+    port: 6379
+    password: Yinling@2025
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+
+logging:
+  level:
+    root: INFO
+    com.yinling: DEBUG
+
+# AI服务配置
+yinling:
+  ai:
+    xunfei:
+      app-id: ${XUNFEI_APP_ID:}
+      api-key: ${XUNFEI_API_KEY:}
+      api-secret: ${XUNFEI_API_SECRET:}
+    aliyun:
+      access-key-id: ${ALIYUN_ACCESS_KEY_ID:}
+      access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET:}
+    baidu:
+      api-key: ${BAIDU_API_KEY:}
+      secret-key: ${BAIDU_SECRET_KEY:}

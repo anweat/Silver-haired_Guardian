@@ -1,0 +1,23 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: health-service
+  datasource:
+    url: jdbc:mysql://mysql-master:3306/yinling_health?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: Yinling@2025
+  redis:
+    host: redis
+    port: 6379
+    password: Yinling@2025
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+
+logging:
+  level:
+    root: INFO
+    com.yinling: DEBUG

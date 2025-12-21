@@ -1,0 +1,72 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql-master:3306/yinling_main?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: Yinling@2025
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  redis:
+    host: redis
+    port: 6379
+    password: Yinling@2025
+    database: 0
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+        namespace: dev
+        username: nacos
+        password: nacos
+      config:
+        server-addr: nacos:8848
+        namespace: dev
+        file-extension: yaml
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.yinling.user.entity
+  global-config:
+    db-config:
+      id-type: AUTO
+      logic-delete-field: deletedAt
+      logic-delete-value: now()
+
+yinling:
+  jwt:
+    secret: your_jwt_secret_key_at_least_256_bits_here
+    expiration: 86400000
+    refresh-expiration: 604800000
+
+logging:
+  level:
+    root: INFO
+    com.yinling: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
